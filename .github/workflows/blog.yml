@@ -1,0 +1,51 @@
+name: Blog CI/CD
+
+on:
+  push:
+    branches: 
+      - master
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  blog-cicd:
+    name: Hexo blog build & deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout codes
+      uses: actions/checkout@v2
+
+    - name: Setup node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - name: Install dependencies
+      run: |
+        npm install hexo-cli gulp -g
+        mkdir -p ./temp/markdown
+        mv ./*.md ./temp/markdown/
+        mkdir -p ./temp/hexo
+        cd ./temp/hexo/
+        hexo init
+        mv ../markdown/*.md ./source/_posts/
+       # npm install
+
+    - name: Generate files
+      run: hexo generate
+
+    - name: Execute gulp task
+      run: gulp
+
+    - name: Deploy blog
+      run: |
+        git clone "https://github.com/${{ secrets.YOUR_NAME }}/${{ secrets.YOUR_NAME }}.github.io.git" deploy_git
+        mv ./deploy_git/.git ./public/
+        cd ./public
+        git config user.name "${{ secrets.YOUR_NAME }}"
+        git config user.email "${{ secrets.YOUR_EMAIL }}"
+        git add .
+        git commit -m "GitHub Actions Auto Builder at $(date +'%Y-%m-%d %H:%M:%S')"
+        git push --force --quiet "https://${{ secrets.PERSONAL_ACCESS_TOKENS }}@github.com/${{ secrets.YOUR_NAME }}/${{ secrets.YOUR_NAME }}.github.io.git" master:master

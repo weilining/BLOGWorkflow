@@ -31,16 +31,7 @@ jobs:
         cd ./temp/hexo/
         hexo init
         mv ../markdown/*.md ./source/_posts/
-       # npm install
-
-    - name: Generate files
-      run: hexo generate
-
-    - name: Execute gulp task
-      run: gulp
-
-    - name: Deploy blog
-      run: |
+        hexo generate
         git clone "https://github.com/${{ secrets.YOUR_NAME }}/${{ secrets.YOUR_NAME }}.github.io.git" deploy_git
         mv ./deploy_git/.git ./public/
         cd ./public
